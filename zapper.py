@@ -22,7 +22,6 @@ def run_script(fullname):
 
     output = ''
 
-
     if fullname.endswith('.py'):
         script_locals = {'args' : request.args, 'response' : '...'}
 
@@ -30,11 +29,13 @@ def run_script(fullname):
             exec(file.read(), None, script_locals)
         
         output = script_locals['response']
-        
+
     else:
         output = subprocess.run([fullname], check=True, capture_output=True).stdout.decode("utf-8") 
 
     timespan = timer() - start
+
+    output = output.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
     return output, timespan
 
@@ -115,12 +116,12 @@ def run():
 
     fullname = scripts_path + name
 
-    script_output, span = run_script(fullname)
+    output, span = run_script(fullname)
 
     return page('output', f'''
 <div>{fullname}</div>
 <div>elapsed: {span}s</div>
-<pre>{script_output}</pre>
+<pre><code>{output}</code></pre>
 ''')
 
 @app.route('/favicon.ico')
